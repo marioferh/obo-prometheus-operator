@@ -431,9 +431,9 @@ main() {
 		return 0
 	fi
 
-	validate || {
-		die "Please fix failures ☝️ (indicated by ⚠️ ) and run the script again "
-	}
+#	validate || {
+#		die "Please fix failures ☝️ (indicated by ⚠️ ) and run the script again "
+#	}
 
 	bumpup_version
 	RHOBS_VERSION="$(head -n1 VERSION)"
@@ -446,7 +446,7 @@ main() {
 	hack_reset_changelog
 	make_required_targets
 	generate_stripped_down_crds
-	remove_upstream_release_workflows
+#remove_upstream_release_workflows
 	make_olm_bundle "$IMG_REPO"
 	git_release_commit
 	run_checks

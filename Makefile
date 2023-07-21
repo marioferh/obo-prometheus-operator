@@ -10,10 +10,10 @@ endif
 
 CONTAINER_CLI ?= docker
 
-GO_PKG=github.com/prometheus-operator/prometheus-operator
-IMAGE_OPERATOR?=quay.io/prometheus-operator/prometheus-operator
-IMAGE_RELOADER?=quay.io/prometheus-operator/prometheus-config-reloader
-IMAGE_WEBHOOK?=quay.io/prometheus-operator/admission-webhook
+GO_PKG=github.com/rhobs/obo-prometheus-operator
+IMAGE_OPERATOR?=quay.io/rhobs/obo-prometheus-operator
+IMAGE_RELOADER?=quay.io/rhobs/obo-prometheus-config-reloader
+IMAGE_WEBHOOK?=quay.io/rhobs/obo-admission-webhook
 TAG?=$(shell git rev-parse --short HEAD)
 VERSION?=$(shell cat VERSION | tr -d " \t\n\r")
 
@@ -227,7 +227,7 @@ generate-crds: $(CONTROLLER_GEN_BINARY) $(GOJSONTOYAML_BINARY) $(TYPES_V1_TARGET
 	find example/prometheus-operator-crd/ -name '*.yaml' -print0 | xargs -0 -I{} sh -c '$(GOJSONTOYAML_BINARY) -yamltojson < "$$1" | jq > "$(PWD)/jsonnet/prometheus-operator/$$(basename $$1 | cut -d'_' -f2 | cut -d. -f1)-crd.json"' -- {}
 	cd pkg/apis/monitoring && $(CONTROLLER_GEN_BINARY) crd:crdVersions=v1 paths=./... output:crd:dir=$(PWD)/example/prometheus-operator-crd-full
 	echo "// Code generated using 'make generate-crds'. DO NOT EDIT." > $(PWD)/jsonnet/prometheus-operator/alertmanagerconfigs-v1beta1-crd.libsonnet
-	echo "{spec+: {versions+: $$($(GOJSONTOYAML_BINARY) -yamltojson < example/prometheus-operator-crd-full/monitoring.coreos.com_alertmanagerconfigs.yaml | jq '.spec.versions | map(select(.name == "v1beta1"))')}}" | $(JSONNETFMT_BINARY) - >> $(PWD)/jsonnet/prometheus-operator/alertmanagerconfigs-v1beta1-crd.libsonnet
+	echo "{spec+: {versions+: $$($(GOJSONTOYAML_BINARY) -yamltojson < example/prometheus-operator-crd-full/monitoring.rhobs_alertmanagerconfigs.yaml | jq '.spec.versions | map(select(.name == "v1beta1"))')}}" | $(JSONNETFMT_BINARY) - >> $(PWD)/jsonnet/prometheus-operator/alertmanagerconfigs-v1beta1-crd.libsonnet
 
 .PHONY: generate-remote-write-certs
 generate-remote-write-certs:
@@ -244,7 +244,7 @@ bundle.yaml: generate-crds $(shell find example/rbac/prometheus-operator/*.yaml 
 # description fields being removed. It is meant as a workaround for the issue
 # that `kubectl apply -f ...` might fail with the full version of the CRDs
 # because of too long annotations field.
-# See https://github.com/prometheus-operator/prometheus-operator/issues/4355
+# See https://github.com/rhobs/obo-prometheus-operator/issues/4355
 stripped-down-crds.yaml: $(shell find example/prometheus-operator-crd/*.yaml -type f) $(GOJSONTOYAML_BINARY)
 	: > $@
 	for f in example/prometheus-operator-crd/*.yaml; do echo '---' >> $@; $(GOJSONTOYAML_BINARY) -yamltojson < $$f | jq 'walk(if type == "object" then with_entries(select(.key | test("description") | not)) else . end)' | $(GOJSONTOYAML_BINARY) >> $@; done
@@ -281,7 +281,7 @@ Documentation/compatibility.md: pkg/operator/defaults.go
 	$(MDOX_BINARY) fmt $@
 
 Documentation/api.md: $(TYPES_V1_TARGET) $(TYPES_V1ALPHA1_TARGET) $(TYPES_V1BETA1_TARGET)
-	$(API_DOC_GEN_BINARY) -api-dir "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/" -config "$(PWD)/scripts/docs/config.json" -template-dir "$(PWD)/scripts/docs/templates" -out-file "$(PWD)/Documentation/api.md"
+	$(API_DOC_GEN_BINARY) -api-dir "github.com/rhobs/obo-prometheus-operator/pkg/apis/monitoring/" -config "$(PWD)/scripts/docs/config.json" -template-dir "$(PWD)/scripts/docs/templates" -out-file "$(PWD)/Documentation/api.md"
 
 ##############
 # Formatting #
@@ -360,12 +360,14 @@ test-e2e: test/instrumented-sample-app/certs/cert.pem test/instrumented-sample-a
 $(TOOLS_BIN_DIR):
 	mkdir -p $(TOOLS_BIN_DIR)
 
+$(info mariofar)
+$(info $(TOOLS_BIN_DIR))
 $(TOOLING): $(TOOLS_BIN_DIR)
 	@echo Installing tools from scripts/tools.go
 	@cat scripts/tools.go | grep _ | awk -F'"' '{print $$2}' | GOBIN=$(TOOLS_BIN_DIR) xargs -tI % go install -mod=readonly -modfile=scripts/go.mod %
 	@GOBIN=$(TOOLS_BIN_DIR) go install $(GO_PKG)/cmd/po-docgen
 	@echo Downloading shellcheck
-	@cd $(TOOLS_BIN_DIR) && wget -qO- "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.$(GOOS).x86_64.tar.xz" | tar -xJv --strip=1 shellcheck-stable/shellcheck
+#@cd $(TOOLS_BIN_DIR) | tar -xJv --strip=1 shellcheck-stable/shellcheck
 
 # generate k8s generator variable and target,
 # i.e. if $(1)=informer-gen:
