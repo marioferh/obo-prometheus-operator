@@ -23,8 +23,6 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
-
-	"github.com/prometheus-operator/prometheus-operator/pkg/operator"
 )
 
 var cases = []struct {
@@ -42,8 +40,8 @@ var cases = []struct {
 func TestCreateOrdinalEnvVar(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.in, func(t *testing.T) {
-			os.Setenv(operator.PodNameEnvVar, tt.in)
-			s := createOrdinalEnvvar(operator.PodNameEnvVar)
+			os.Setenv(statefulsetOrdinalFromEnvvarDefault, tt.in)
+			s := createOrdinalEnvvar(statefulsetOrdinalFromEnvvarDefault)
 			if os.Getenv(statefulsetOrdinalEnvvar) != tt.out {
 				t.Errorf("got %v, want %s", s, tt.out)
 			}

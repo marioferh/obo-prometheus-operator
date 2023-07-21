@@ -27,7 +27,6 @@ import (
 	"time"
 
 	logging "github.com/prometheus-operator/prometheus-operator/internal/log"
-	"github.com/prometheus-operator/prometheus-operator/pkg/operator"
 	"github.com/prometheus-operator/prometheus-operator/pkg/versionutil"
 
 	"github.com/alecthomas/kingpin/v2"
@@ -46,7 +45,8 @@ const (
 	defaultRetryInterval = 5 * time.Second  // 5 seconds was the value previously hardcoded in github.com/thanos-io/thanos/pkg/reloader.
 	defaultReloadTimeout = 30 * time.Second // 30 seconds was the default value
 
-	statefulsetOrdinalEnvvar = "STATEFULSET_ORDINAL_NUMBER"
+	statefulsetOrdinalEnvvar            = "STATEFULSET_ORDINAL_NUMBER"
+	statefulsetOrdinalFromEnvvarDefault = "POD_NAME"
 )
 
 func main() {
@@ -67,7 +67,7 @@ func main() {
 	createStatefulsetOrdinalFrom := app.Flag(
 		"statefulset-ordinal-from-envvar",
 		fmt.Sprintf("parse this environment variable to create %s, containing the statefulset ordinal number", statefulsetOrdinalEnvvar)).
-		Default(operator.PodNameEnvVar).String()
+		Default(statefulsetOrdinalFromEnvvarDefault).String()
 
 	listenAddress := app.Flag(
 		"listen-address",
