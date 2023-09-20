@@ -38,7 +38,8 @@ const (
 // +kubebuilder:printcolumn:name="Paused",type="boolean",JSONPath=".status.paused",description="Whether the resource reconciliation is paused or not",priority=1
 // +kubebuilder:subresource:status
 
-// Alertmanager describes an Alertmanager cluster.
+// Alertmanager describes an Alertmanager cluster mariofar
+// +operator-sdk:csv:customresourcedefinitions:displayName="some display name"
 type Alertmanager struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
