@@ -17,7 +17,7 @@
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1alpha1"
+	v1alpha1 "github.com/rhobs/obo-prometheus-operator/pkg/apis/monitoring/v1alpha1"
 )
 
 // StaticConfigApplyConfiguration represents a declarative configuration of the StaticConfig type for use
